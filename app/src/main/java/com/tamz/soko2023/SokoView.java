@@ -39,8 +39,11 @@ public class SokoView extends View {
             0,0,0,0,0,0,0,0,0,0
     };
 
+    private int index;
+
     private int hero;
     private int previousHeroElement = 0;
+    int vertical;
 
     public SokoView(Context context) {
         super(context);
@@ -75,6 +78,7 @@ public class SokoView extends View {
             }
             i++;
         }
+        this.vertical = 10;
     }
 
     @Override
@@ -100,7 +104,27 @@ public class SokoView extends View {
     }
 
     public void moveHero(Move move) {
-        int expectedIndex = this.hero + move.getValue();
+        int m = 0;
+
+
+        switch (move) {
+            case MOVE_LEFT:
+                m = -1;
+                break;
+            case MOVE_RIGHT:
+                m = 1;
+                break;
+            case MOVE_UP:
+                m = -this.vertical;
+                break;
+            case MOVE_DOWN:
+                m = this.vertical;
+                break;
+        }
+
+        Log.d("Move", String.valueOf(m));
+
+        int expectedIndex = this.hero + m;
         if (expectedIndex < 0 || expectedIndex > this.level.length)
             return;
         if (this.level[expectedIndex] == 0 || this.level[expectedIndex] == 3) {
@@ -111,7 +135,7 @@ public class SokoView extends View {
         }
 
         if (this.level[expectedIndex] == 2) {
-            int expectedBoxIndex = expectedIndex + move.getValue();
+            int expectedBoxIndex = expectedIndex + m;
             if (this.level[expectedBoxIndex] == 0 || this.level[expectedBoxIndex] == 3) {
                 this.level[this.hero] = this.previousHeroElement;
                 this.previousHeroElement = 0;
@@ -125,7 +149,7 @@ public class SokoView extends View {
         }
 
         if (this.level[expectedIndex] == 5) {
-            int expectedBoxIndex = expectedIndex + move.getValue();
+            int expectedBoxIndex = expectedIndex + m;
             if (this.level[expectedBoxIndex] == 0 || this.level[expectedBoxIndex] == 3) {
                 this.level[this.hero] = this.previousHeroElement;
                 this.previousHeroElement = 3;
@@ -137,8 +161,14 @@ public class SokoView extends View {
                     this.level[expectedBoxIndex] = 5;
             }
         }
-        if(chechForWin())
-            Log.d("WIN", "WIN");
+        if(chechForWin()) {
+            this.index++;
+            int len = (int) MainActivity.levelList.stream().count();
+            if (index > len)
+                index = 0;
+            this.setLevel(MainActivity.levelList.get(index), index);
+        }
+
         this.invalidate();
     }
 
@@ -147,5 +177,28 @@ public class SokoView extends View {
             if (i == 3)
                 return false;
         return true;
+    }
+
+    public void setLevel(Level level, int index) {
+        Log.d("Set", "Set Level method");
+        this.level = level.getMap().clone();
+        this.vertical = level.getWidth();
+        this.lW = level.getWidth();
+        this.lH = level.getHeight();
+        int i = 0;
+        this.index = index;
+        for (int x : this.level) {
+            if (x == 4) {
+                hero = i;
+                break;
+            }
+            i++;
+        }
+        this.invalidate();
+    }
+
+    public void reset() {
+        Log.d("Reset", "reset method");
+        this.setLevel(MainActivity.levelList.get(this.index), this.index);
     }
 }
