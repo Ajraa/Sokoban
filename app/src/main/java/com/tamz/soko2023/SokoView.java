@@ -25,6 +25,8 @@ public class SokoView extends View {
 
     int width;
     int height;
+    int w;
+    int h;
 
     private int level[] = {
             1,1,1,1,1,1,1,1,1,0,
@@ -85,6 +87,8 @@ public class SokoView extends View {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         width = w / lW;
         height = h / lH;
+        this.w = w;
+        this.h = h;
         super.onSizeChanged(w, h, oldw, oldh);
     }
 
@@ -161,7 +165,7 @@ public class SokoView extends View {
                     this.level[expectedBoxIndex] = 5;
             }
         }
-        if(chechForWin()) {
+        if(checkForWin()) {
             this.index++;
             int len = (int) MainActivity.levelList.stream().count();
             if (index > len)
@@ -172,7 +176,7 @@ public class SokoView extends View {
         this.invalidate();
     }
 
-    private boolean chechForWin() {
+    private boolean checkForWin() {
         for (int i : this.level)
             if (i == 3)
                 return false;
@@ -185,6 +189,9 @@ public class SokoView extends View {
         this.vertical = level.getWidth();
         this.lW = level.getWidth();
         this.lH = level.getHeight();
+        width = w / lW;
+        height = h / lH;
+
         int i = 0;
         this.index = index;
         for (int x : this.level) {

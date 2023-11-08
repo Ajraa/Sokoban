@@ -20,11 +20,13 @@ public class LevelActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_level);
         this.levelListView = (ListView) findViewById(R.id.levelListView);
+
         ArrayAdapter<Level> adapter = new ArrayAdapter<Level>
                 (this, androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, MainActivity.levelList);
         this.levelListView.setAdapter(adapter);
 
         this.levelListView.setOnItemClickListener((adapterView, view, i, l) -> {
+            this.levelListView.setAdapter(null);
             Log.d("Item i", String.valueOf(i));
             Log.d("Item l", String.valueOf(l));
             Intent returnIntent = new Intent();

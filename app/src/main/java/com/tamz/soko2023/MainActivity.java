@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
         this.sokoView = (SokoView) findViewById(R.id.sokoView);
         mDetector = new GestureDetectorCompat(this,new MyGestureListener());
         this.loadAssets();
-        this.sokoView.setLevel(levelList.get(0), 0);
+        this.sokoView.setLevel(levelList.get(1), 1);
     }
 
     @Override
