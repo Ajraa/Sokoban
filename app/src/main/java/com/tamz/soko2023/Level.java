@@ -1,9 +1,13 @@
 package com.tamz.soko2023;
 
+import android.annotation.SuppressLint;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class Level {
@@ -11,8 +15,10 @@ public class Level {
     private String title;
     private int height;
     private int width;
+    private int score;
 
     public Level(String input) {
+
         int height = 0;
         int max_width = 0;
         Scanner scanner = new Scanner(input);
@@ -44,6 +50,20 @@ public class Level {
                 this.map[index++] = 0;
         }
         scanner.close();
+
+        Log.d("Db", "Pred db");
+        SQLiteDatabase db = MainActivity.dbHelper.getWritableDatabase();
+        String[] projection = {"score"};
+        String selection = "title = ?";
+        String[] selectionArgs = {this.title};
+        Cursor cursor = db.query("Level", projection, selection, selectionArgs, null, null, null);
+        if(cursor.getCount() == 0)
+            this.score = 0;
+        else {
+            cursor.moveToFirst();
+            this.score = cursor.getInt(cursor.getColumnIndexOrThrow("score"));
+        }
+        Log.d("Db", "Po db");
     }
 
     private int evaluateChar(char c) {
@@ -83,5 +103,17 @@ public class Level {
     @Override
     public String toString() {
         return this.title;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public void setScore(int score) {
+        this.score = score;
+    }
+
+    public String getTitle() {
+        return title;
     }
 }

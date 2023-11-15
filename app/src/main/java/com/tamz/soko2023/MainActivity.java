@@ -5,8 +5,11 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GestureDetectorCompat;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.res.AssetManager;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -23,6 +26,7 @@ import java.util.Scanner;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static MyDbHelper dbHelper;
     private SokoView sokoView;
     private GestureDetectorCompat mDetector;
     public static List<Level> levelList = new ArrayList<Level>();
@@ -31,12 +35,50 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        dbHelper = new MyDbHelper(this);
         this.sokoView = (SokoView) findViewById(R.id.sokoView);
         mDetector = new GestureDetectorCompat(this,new MyGestureListener());
         this.loadAssets();
-        this.sokoView.setLevel(levelList.get(1), 1);
+        this.sokoView.setLevel(levelList.get(0), 0);
+
     }
+
+    public static boolean exists(String title) {
+        SQLiteDatabase db = MainActivity.dbHelper.getWritableDatabase();
+        String[] projection = {"score"};
+        String selection = "title = ?";
+        String[] selectionArgs = {title};
+        Cursor cursor = db.query("Level", projection, selection, selectionArgs, null, null, null);
+        if(cursor.getCount() == 0)
+            return false;
+        return true;
+    }
+
+    public static int getScore(String title) {
+        int score;
+        SQLiteDatabase db = MainActivity.dbHelper.getWritableDatabase();
+        String[] projection = {"score"};
+        String selection = "title = ?";
+        String[] selectionArgs = {title};
+        Cursor cursor = db.query("Level", projection, selection, selectionArgs, null, null, null);
+        if(cursor.getCount() == 0)
+            score = Integer.MAX_VALUE;
+        else {
+            cursor.moveToFirst();
+            score = cursor.getInt(cursor.getColumnIndexOrThrow("score"));
+        }
+        return score;
+    }
+
+    public boolean isDatabaseCreated() {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        int version = db.getVersion();
+        db.close();
+
+        return version > 0;
+    }
+
 
     @Override
     public boolean onTouchEvent(MotionEvent event){

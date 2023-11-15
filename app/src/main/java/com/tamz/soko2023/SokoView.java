@@ -2,22 +2,21 @@ package com.tamz.soko2023;
 
 
 import android.annotation.SuppressLint;
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Toast;
 
 /**
  * Created by kru13
  */
 public class SokoView extends View {
-
     Bitmap[] bmp;
 
     int lW = 10;
@@ -27,6 +26,7 @@ public class SokoView extends View {
     int height;
     int w;
     int h;
+    int swipes = 0;
 
     private int level[] = {
             1,1,1,1,1,1,1,1,1,0,
@@ -109,7 +109,7 @@ public class SokoView extends View {
 
     public void moveHero(Move move) {
         int m = 0;
-
+        this.swipes++;
 
         switch (move) {
             case MOVE_LEFT:
@@ -166,6 +166,7 @@ public class SokoView extends View {
             }
         }
         if(checkForWin()) {
+            this.saveScore();
             this.index++;
             int len = (int) MainActivity.levelList.stream().count();
             if (index > len)
@@ -202,10 +203,43 @@ public class SokoView extends View {
             i++;
         }
         this.invalidate();
+
+        this.swipes = 0;
     }
 
     public void reset() {
         Log.d("Reset", "reset method");
         this.setLevel(MainActivity.levelList.get(this.index), this.index);
+        this.swipes = 0;
+    }
+
+    private void saveScore() {
+        Level l = MainActivity.levelList.get(this.index);
+        if(MainActivity.getScore(l.getTitle()) < this.swipes)
+            return;
+
+        l.setScore(this.swipes);
+        SQLiteDatabase db = MainActivity.dbHelper.getWritableDatabase();
+
+        if(MainActivity.exists(l.getTitle())) {
+            ContentValues values = new ContentValues();
+            values.put("score", this.swipes);
+
+            String selection = "title = ?";
+
+            String[] selectionArgs = {l.getTitle()};
+
+
+            db.update("Level", values, selection, selectionArgs);
+        } else {
+            ContentValues values = new ContentValues();
+            values.put("title", l.getTitle());
+            values.put("score", this.swipes);
+            db.insertWithOnConflict(
+                    "Level",
+                    null,
+                    values,
+                    SQLiteDatabase.CONFLICT_REPLACE);
+        }
     }
 }
